@@ -1,0 +1,24 @@
+<svg width="50" height="50" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Diadema -->
+  <path d="M50 50 C50 20, 150 20, 150 50" stroke="black" stroke-width="10" fill="none"/>
+
+  <!-- Auricular izquierdo -->
+  <circle cx="50" cy="100" r="25" stroke="black" stroke-width="5" fill="gray"/>
+  <circle cx="50" cy="100" r="15" stroke="black" stroke-width="5" fill="orange"/>
+
+  <!-- Almohadilla izquierda -->
+  <circle cx="50" cy="100" r="20" stroke="black" stroke-width="5" fill="purple"/>
+
+  <!-- Conector izquierdo -->
+  <rect x="40" y="120" width="20" height="30" stroke="black" stroke-width="5" fill="black"/>
+
+  <!-- Auricular derecho -->
+  <circle cx="150" cy="100" r="25" stroke="black" stroke-width="5" fill="gray"/>
+  <circle cx="150" cy="100" r="15" stroke="black" stroke-width="5" fill="orange"/>
+
+  <!-- Almohadilla derecha -->
+  <circle cx="150" cy="100" r="20" stroke="black" stroke-width="5" fill="purple"/>
+
+  <!-- Conector derecho -->
+  <rect x="140" y="120" width="20" height="30" stroke="black" stroke-width="5" fill="black"/>
+</svg>
