@@ -23,6 +23,7 @@ function reducer(state, action) {
         case ACTIONS.LOGOUT:
             return {
                 ...state,
+                token: null,
                 isAuthenticated: false,
             };
         default:
@@ -32,6 +33,7 @@ function reducer(state, action) {
 
 function AuthProvider({ children }) {
     const [state, dispatch] = useReducer(reducer, {
+        token: null,
         isAuthenticated: false,
     });
 
