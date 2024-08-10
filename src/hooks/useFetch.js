@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useReducer, useCallback } from "react";
+import { useReducer } from "react";
 
 const ACTIONS = {
     FETCH_INIT: "FETCH_INIT",
@@ -34,9 +34,10 @@ function useFetch(url, options = {}) {
     const [state, dispatch] = useReducer(reducer, {
         isError: false,
         isLoading: true,
+        data: null,
     });
 
-    const doFetch = useCallback((newOptions) => {
+    /*function doFetch(newOptions) {
         dispatch({ type: ACTIONS.FETCH_INIT });
 
         fetch(url, { ...options, ...newOptions })
@@ -52,7 +53,22 @@ function useFetch(url, options = {}) {
             .catch((e) => {
                 dispatch({ type: ACTIONS.FETCH_FAILURE });
             });
-    }, [url, options]);
+    }*/
+    
+            const doFetch = async (newOptions = {}) => {
+                dispatch({ type: ACTIONS.FETCH_INIT });
+        
+                try {
+                    const response = await fetch(url, { ...options, ...newOptions })
+                    if(!response.ok) throw new Error("Error al relizar la petición");
+                    const data = await response.json();
+                    dispatch({ type: ACTIONS.FETCH_SUCCESS, payload: data });
+                    return data;
+                } catch(e){
+                    dispatch({ type: ACTIONS.FETCH_FAILURE });
+                    throw e;
+                }}
+
 
     return [state, doFetch];
 }
