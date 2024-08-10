@@ -1,0 +1,10 @@
+.custom-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-logo-img {
+    width: 128px; 
+    height: 128px; 
+}
