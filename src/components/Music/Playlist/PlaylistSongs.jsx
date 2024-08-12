@@ -1,20 +1,38 @@
-import useFetch from "../../../hooks/useFetch";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import GetSong from "../Song/GetSong";
-import PropTypes from "prop-types";
 
 function PlaylistSongs() {
-    const { id } = useParams();
+    /* Componente que capta el parametro de ruta 'id' y obtiene todas las canciones de la playlist con ese identificador.
+       Renderiza todas las canciones encontradas con el componente GetSong. */
 
-    // Use the endpoint for the specific playlist
-    const [{ data, isError, isLoading }, doFetch] = useFetch(
-        `https://sandbox.academiadevelopers.com/harmonyhub/playlists/${id}`,
-        {}
-    );
+    const { id } = useParams();
+    const [data, setData] = useState(null);
+    const [isError, setIsError] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        doFetch();
+        const fetchData = async () => {
+            setIsLoading(true);
+            setIsError(false);
+
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}harmonyhub/playlists/${id}/`);
+                if (response.ok) {
+                    const result = await response.json();
+                    setData(result);
+                } else {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+            } catch (error) {
+                setIsError(true);
+                console.error('Error al cargar datos:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+    fetchData();
     }, [id]);
 
     if (isLoading) {
@@ -22,13 +40,21 @@ function PlaylistSongs() {
     }
 
     if (isError) {
-        return (<div className="my-5">
-                <h2 className="title">{data.name}</h2><p>Error al cargar la playlist.</p></div>)
+        return (
+            <div className="my-5">
+                <h2 className="title">Error al cargar la playlist.</h2>
+            </div>
+        );
     }
 
-    if (!data || !data.entries || data.entries.length === 0) {
-        return (<div className="my-5">
-                <h2 className="title">{data.name}</h2><p> No hay canciones en esta playlist.</p></div>)
+    if (!data || !Array.isArray(data.entries) || data.entries.length === 0) {
+        console.log("datos:",data);
+        return (
+            <div className="my-5">
+                <h2 className="title">{data ? data.name : 'Sin nombre'}</h2>
+                <p>No hay canciones en esta playlist.</p>
+            </div>
+        );
     }
 
     return (
@@ -39,8 +65,9 @@ function PlaylistSongs() {
                     <button className="button is-success is-outlined">Añadir canción</button>
                 </div>
                 <ul>
+                    {console.log(data)}
                     {data.entries.map(entryId => (
-                        <li key={entryId} className="column is-two-third">
+                        <li key={entryId} className="column is-two-thirds">
                             <GetSong songId={entryId} />
                         </li>
                     ))}
@@ -49,9 +76,5 @@ function PlaylistSongs() {
         </div>
     );
 }
-
-PlaylistSongs.propTypes = {
-    id: PropTypes.number.isRequired,
-};
 
 export default PlaylistSongs;

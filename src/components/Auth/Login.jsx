@@ -1,46 +1,53 @@
-import { useState, useEffect } from "react";
-import useFetch from "../../hooks/useFetch";
+import { useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom";
 import catDraw from "../../assets/Cat-Login.svg";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Login() {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [triggerFetch, setTriggerFetch] = useState(false);
+    /* Renderiza el formulario de inicio de sesión y maneja la autenticación del usuario.
+       Al enviar el formulario, se realiza una solicitud POST para autenticar al usuario con su nombre de usuario y contraseña.
+       Si la autenticación es exitosa, se almacena el token y se redirige al usuario a la ruta home (/). */
 
-    const [{ data, isError, isLoading }, doFetch] = useFetch(
-        "https://sandbox.academiadevelopers.com/api-auth/",
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ username, password }),
-        }
-    );
-
-    const { login } = useAuth();
+    const usernameRef = useRef("");
+    const passwordRef = useRef("");
+    const [isError, setIsError] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const { login } = useAuth("actions");
     const navigate = useNavigate();
+    const location = useLocation();
 
     function handleSubmit(event) {
         event.preventDefault();
-        setTriggerFetch(true);
-        doFetch();
-    }
-
-    function handleChange(event) {
-        const { name, value } = event.target;
-        if (name === "username") setUsername(value);
-        if (name === "password") setPassword(value);
-    }
-
-    useEffect(() => {
-        if (data && !isError && triggerFetch) {
-            login(data.token);
-            navigate("/");
+        if (!isLoading) {
+            setIsLoading(true);
+            fetch(`${import.meta.env.VITE_API_BASE_URL}api-auth/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    username: usernameRef.current.value,
+                    password: passwordRef.current.value,
+                }),
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("No se pudo iniciar sesión");
+                    }
+                    return response.json();
+                })
+                .then((responseData) => {
+                    login(responseData.token, responseData.user__id, navigate, location);
+                })
+                .catch((error) => {
+                    console.error("Error al iniciar sesión", error);
+                    setIsError(true);
+                })
+                .finally(() => {
+                    setIsLoading(false);
+                });
         }
-    }, [data, isError, triggerFetch, login, navigate]);
+    }
 
     return ( 
        <div className="section" style={{ minHeight: '100vh', padding: 0, backgroundColor:'#E5BEFF' }}>
@@ -54,8 +61,7 @@ function Login() {
                                         type="text"
                                         id="username"
                                         name="username"
-                                        value={username}
-                                        onChange={handleChange}
+                                        ref={usernameRef}
                                     />
                                     <span className="icon is-small is-left">
                                         <i className="fas fa-user"></i>
@@ -70,8 +76,7 @@ function Login() {
                                         type="password"
                                         id="password"
                                         name="password"
-                                        value={password}
-                                        onChange={handleChange}
+                                        ref={passwordRef}
                                     />
                                     <span className="icon is-small is-left">
                                         <i className="fas fa-lock"></i>
@@ -86,13 +91,8 @@ function Login() {
                                     >
                                         Iniciar sesión
                                     </button>
-                                    {isLoading && triggerFetch && (
-                                        <p>Cargando...</p>
-                                    )}
+                                    {isLoading && <p>Cargando...</p>}
                                     {isError && <p>Error al cargar los datos.</p>}
-                                    {data && (
-                                        <p>{`Token obtenido: ${data.token}`}</p>
-                                    )}
                                 </div>
                             </div>
                         </form>

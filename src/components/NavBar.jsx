@@ -1,12 +1,17 @@
 import logo from "../assets/CatMusicLogo.svg"
 import '../assets/LogoStyles.css';
 import NavMenu from "./NavMenu";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth} from "../context/AuthContext";
 import PropTypes from 'prop-types';
 
 function NavBar({ appName }) {
-    const { logout } = useAuth();
+    /* componente representa la barra de navegación principal de la aplicación. 
+       Contiene el logo de la aplicación, enlaces a diferentes secciones, y un botón para cerrar sesión. */
+
+    const { logout } = useAuth("actions");
+    const navigate = useNavigate();
+
     return (
         <header>
             <nav
@@ -16,7 +21,7 @@ function NavBar({ appName }) {
             >
                 <div className="navbar-brand">
                     <div className="columns is-vcentered">
-                        <Link className="navbar-item column" to="/home">
+                        <Link className="navbar-item column" to="/">
                             <figure className="image custom-logo">
                                 <img 
                                 src={logo}
@@ -49,7 +54,7 @@ function NavBar({ appName }) {
                     ]}
                 />
                 <div className="navbar-start">
-                    <button className="button" onClick={logout}>
+                    <button className="button" onClick={() => logout(navigate)}>
                         <span className="icon">
                             <i className="fas fa-sign-out-alt"></i>
                         </span>

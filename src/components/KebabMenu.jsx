@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import Modal from './Modal';
-import EditForm from './Modal Options/EditForm';
-import DetailsView from './Modal Options/DetailsView';
-import DeleteConfirmation from './Modal Options/DeleteConfirmation';
+import EditForm from './ModalOptions/EditForm';
+import DetailsView from './ModalOptions/DetailsView';
+import DeleteConfirmation from './ModalOptions/DeleteConfirmation';
 import PropTypes from 'prop-types';
 
 function KebabMenu ({ entityType, entityId }) {
+  /* Componente que muestra un menú desplegable de opciones ('editar', 'ver detalles', 'eliminar') al hacer clic en un botón de 
+  "kebab". Cada opción del menú abre un modal con contenido específico y realiza una acción para la entidad seleccionada. */
+
   const [isActive, setIsActive] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
@@ -15,21 +18,23 @@ function KebabMenu ({ entityType, entityId }) {
     setIsActive(!isActive);
   };
 
-  const handleEdit = () => {
-    setModalContent(<EditForm entityType={entityType} entityId={entityId} />);
+  const handleEdit = (event) => {
+    event.stopPropagation();
+    setModalContent(<EditForm entityType={entityType} entityId={entityId} onClose={() => setIsModalOpen(false)}/>);
     setIsModalOpen(true);
   };
 
-  const handleDetails = () => {
-    setModalContent(<DetailsView entityType={entityType} entityId={entityId} />);
-    setIsModalOpen(true);
+  const handleDetails = (event) => {
+      event.stopPropagation(); 
+      setModalContent(<DetailsView entityType={entityType} entityId={entityId} onClose={() => setIsModalOpen(false)}/>);
+      setIsModalOpen(true);
   };
 
-  const handleDelete = () => {
-    setModalContent(<DeleteConfirmation entityType={entityType} entityId={entityId} />);
-    setIsModalOpen(true);
+  const handleDelete = (event) => {
+      event.stopPropagation(); 
+      setModalContent(<DeleteConfirmation entityType={entityType} entityId={entityId} onClose={() => setIsModalOpen(false)} />);
+      setIsModalOpen(true);
   };
-
 
   return (
     <div className={`dropdown is-right ${isActive ? 'is-active' : ''}`} style={{ position: 'absolute', top: '10px', right: '10px' }}>
@@ -68,8 +73,9 @@ function KebabMenu ({ entityType, entityId }) {
     </div>
   );
 }
+
 KebabMenu.propTypes = {
-  entityType: PropTypes.oneOf(['song', 'playlist', 'album']).isRequired,
+  entityType: PropTypes.oneOf(['song', 'playlist', 'album', 'artist', 'genre']).isRequired,
   entityId: PropTypes.number.isRequired,
 };
 

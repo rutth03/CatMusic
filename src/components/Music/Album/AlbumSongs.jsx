@@ -1,36 +1,44 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
 import { useParams } from "react-router-dom";
 import useFetch from "../../../hooks/useFetch";
-import { useEffect } from "react";
+import { useState } from "react";
 import SongCard from "../Song/SongCard";
+import useInfiniteScroll from "../../../hooks/useInfiniteScroll";
 
 function AlbumSongs() {
+    /* Componente que capta el parametro de ruta 'id' y obtiene todas las canciones del artista con ese identificador.
+       Renderiza todas las canciones encontradas con el componente SongCard. */
+
     const { id } = useParams();
+    const [page, setPage] = useState(1);
+    const { data: albums, nextUrl, isError, isLoading } = useFetch(`${import.meta.env.VITE_API_BASE_URL}harmonyhub/albums/${id}/songs`, page);
 
-    const [{ data, isError, isLoading }, doFetch] = useFetch(
-        `https://sandbox.academiadevelopers.com/harmonyhub/albums/${id}/songs`,
-        {}
-    );
+    const fetchMoreSongs = () => {
+        if (nextUrl && !isLoading) {
+            setPage(prevPage => prevPage + 1);
+        }
+    };
+    const lastSongElementRef = useInfiniteScroll(fetchMoreSongs, [nextUrl, isLoading]);
 
-    useEffect(() => {
-        doFetch();
-    }, [id]);
-
+    if (isError) return <p>Error al cargar canciones del album.</p>;
+    if (!albums.length && !isLoading) return <p>No hay canciones disponibles</p>;
 
     return (
         <div>
              <div className="my-5">
                 <h2 className="title">Canciones</h2>
-                <ul>  {data && data.results.length > 0 ? (
-                        data.results.map((song) => (
-                            <div key={song.id} className="column is-two-third">
+
+                <ul>  
+                {albums.map((song, index) => {
+                        return(
+                            <div
+                                key={song.id}
+                                ref={albums.length === index + 1 ? lastSongElementRef : null}
+                                className="column is-two-third"
+                            >
                                 <SongCard song={song} />
                             </div>
-                        ))
-                    ) : (
-                        <p>No hay canciones disponibles</p>
-                    )}
+                        );
+                    })}
                 </ul>
             </div>
         </div>

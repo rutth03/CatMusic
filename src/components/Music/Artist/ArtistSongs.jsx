@@ -1,47 +1,69 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
-import useFetch from "../../../hooks/useFetch";
-import { useEffect } from "react";
-import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import GetSong from "../Song/GetSong";
 
 function ArtistSongs() {
-    const { id } = useParams();
-    const artistId = parseInt(id, 10);
+    /* Componente que capta el parametro de ruta 'id' y obtiene todas las canciones del artista con ese identificador.
+       Renderiza todas las canciones encontradas con el componente GetSong. */
 
-    const [{ data, isError, isLoading }, doFetch] = useFetch(
-        `https://sandbox.academiadevelopers.com/harmonyhub/song-artists`,
-        {}
-    );
+    const { id } = useParams();
+    const [data, setData] = useState(null);
+    const [isError, setIsError] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        doFetch();
-    }, []);
+        const fetchData = async () => {
+            setIsLoading(true);
+            setIsError(false);
+
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}harmonyhub/artists/${id}/`);
+                if (response.ok) {
+                    const result = await response.json();
+                    setData(result);
+                } else {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+            } catch (error) {
+                setIsError(true);
+                console.error('Error al cargar datos:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [id]);
 
     if (isLoading) {
         return <p>Cargando...</p>;
     }
 
     if (isError) {
-        return <p>Error al cargar los géneros.</p>;
+        return (
+            <div className="my-5">
+                <h2 className="title">Error al cargar las canciones del artista.</h2>
+            </div>
+        );
     }
+
+    if (!data || !Array.isArray(data.songs)) {
+        return <p>No hay canciones disponibles</p>;
+    }
+
+    const songsForArtist = data.songs;
 
     return (
         <div>
             <div className="my-5">
                 <h2 className="title">Canciones</h2>
                 <ul>
-                    {data && data.results.length > 0 ? (
-                        data.results.filter(songArtist => songArtist.artist === artistId).length > 0 ? (
-                            data.results.filter(songArtist => songArtist.artist === artistId).map((songArtist) => (
-                                <div key={songArtist.id} className="column is-two-third">
-                                    <GetSong songId={songArtist.song} />
-                                </div>
-                            ))
-                        ) : (
-                            <p>No hay canciones disponibles</p>
-                        )
+                    {songsForArtist.length > 0 ? (
+                        songsForArtist.map(songId => (
+                            <li key={songId} className="column is-two-third">
+                                <GetSong songId={songId} />
+                            </li>
+                        ))
                     ) : (
                         <p>No hay canciones disponibles</p>
                     )}
@@ -50,9 +72,5 @@ function ArtistSongs() {
         </div>
     );
 }
-
-ArtistSongs.propTypes = {
-    id: PropTypes.number.isRequired,
-};
 
 export default ArtistSongs;

@@ -3,10 +3,28 @@ import PropTypes from "prop-types";
 import KebabMenu from "../../KebabMenu";
 
 function PlaylistCard({ playlist }) {
+    /* Componente que recibe un objeto playlist, renderiza su información basica y un boton kebab que maneja las opciones 
+       'editar', 'Ver detalles' y 'eliminar' de ese recurso. 
+       Al hacer click en el componente se redirecciona a la pagina que contiene las canciones de la playlist. */
+
     const navigate = useNavigate();
+
+    const handleCardClick = () => {
+        navigate(`/playlists/${playlist.id}`);
+    };
+
     return (
-        
-        <div className="card" onClick={() => navigate(`/home/playlists/${playlist.id}`)} style={{ position: 'relative'}}>
+        <div 
+            className="card"
+            onClick={handleCardClick}
+            style={{
+                display: 'flex',
+                minWidth: '500px',  
+                minHeight: '225px', 
+                textAlign: 'center',
+                justifyContent: 'center'
+            }}
+        >
             <div className="card-content">
                 <div className="media">
                     <div className="media-content">
@@ -20,7 +38,7 @@ function PlaylistCard({ playlist }) {
                     <p className="title is-4">Estado: {playlist.public ? "Pública" : "Privada"}</p>
                 </div>
             </div>
-            <KebabMenu/>
+            <KebabMenu entityType='playlist' entityId={playlist.id}/>
         </div>
     );
 }

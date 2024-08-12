@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
-import KebabMenu from "../../KebabMenu";
 
 function SongCard({ song }) {
+    /* Componente que recibe un objeto cancion y renderiza su información basica.*/
+
     return (
         <div className="card" style={{ position: 'relative'}}>
             <div className="card-content">
@@ -23,7 +24,6 @@ function SongCard({ song }) {
                     )}
                 </div>
             </div>
-            <KebabMenu entityType='song' entityId={song.id} />
         </div>
     );
 }
