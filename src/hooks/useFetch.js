@@ -1,76 +1,49 @@
-/* eslint-disable no-unused-vars */
-import { useReducer } from "react";
+import { useState, useEffect } from 'react';
 
-const ACTIONS = {
-    FETCH_INIT: "FETCH_INIT",
-    FETCH_SUCCESS: "FETCH_SUCCESS",
-    FETCH_FAILURE: "FETCH_FAILURE",
-};
+function useFetch(url, page, pageSize = 10) {
+    /* Hook personalizado que realiza solicitudes fetch con manejo de paginación.
+       Realiza una solicitud a una URL específica con parámetros de página y tamaño de página, y maneja la adición de nuevos
+       resultados a los datos existentes, así como el estado de carga y errores. */
 
-function reducer(state, action) {
-    switch (action.type) {
-        case ACTIONS.FETCH_INIT:
-            return {
-                isError: false,
-                isLoading: true,
-            };
-        case ACTIONS.FETCH_SUCCESS:
-            return {
-                data: action.payload,
-                isError: false,
-                isLoading: false,
-            };
-        case ACTIONS.FETCH_FAILURE:
-            return {
-                isError: true,
-                isLoading: false,
-            };
-        default:
-            return state;
-    }
-}
+    const [data, setData] = useState([]);
+    const [nextUrl, setNextUrl] = useState(null);
+    const [isError, setIsError] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-function useFetch(url, options = {}) {
-    const [state, dispatch] = useReducer(reducer, {
-        isError: false,
-        isLoading: true,
-        data: null,
-    });
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            setIsError(false);
 
-    /*function doFetch(newOptions) {
-        dispatch({ type: ACTIONS.FETCH_INIT });
+            try {
+                const response = await fetch(`${url}?page=${page}&page_size=${pageSize}`);
 
-        fetch(url, { ...options, ...newOptions })
-            .then((response) => {
                 if (response.ok) {
-                    return response.json();
+                    const result = await response.json();
+                    if (result.results) {
+                        setData((prevData) => {
+                            const newData = result.results.filter(item => !prevData.some(prevItem => prevItem.id === item.id));
+                            return [...prevData, ...newData];
+                        });
+                        setNextUrl(result.next);
+                    }
+                } else if (response.status === 404) {
+                    setNextUrl(null);
+                } else {
+                    throw new Error('Error desconocido');
                 }
-                throw Error("Error al relizar la petición");
-            })
-            .then((data) => {
-                dispatch({ type: ACTIONS.FETCH_SUCCESS, payload: data });
-            })
-            .catch((e) => {
-                dispatch({ type: ACTIONS.FETCH_FAILURE });
-            });
-    }*/
-    
-            const doFetch = async (newOptions = {}) => {
-                dispatch({ type: ACTIONS.FETCH_INIT });
-        
-                try {
-                    const response = await fetch(url, { ...options, ...newOptions })
-                    if(!response.ok) throw new Error("Error al relizar la petición");
-                    const data = await response.json();
-                    dispatch({ type: ACTIONS.FETCH_SUCCESS, payload: data });
-                    return data;
-                } catch(e){
-                    dispatch({ type: ACTIONS.FETCH_FAILURE });
-                    throw e;
-                }}
+            } catch (error) {
+                setIsError(true);
+                console.error('Error al cargar datos:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
+        fetchData();
+    }, [url, page, pageSize]);
 
-    return [state, doFetch];
+    return { data, nextUrl, isError, isLoading };
 }
 
 export default useFetch;
